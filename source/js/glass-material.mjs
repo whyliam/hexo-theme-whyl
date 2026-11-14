@@ -1,4 +1,6 @@
-import {pickInk, adapt, tintFloor, contrast, luma} from './vendor/glasswork/adapt.mjs';
+const assetVersion=new URL(import.meta.url).searchParams.get('v');
+const suffix=assetVersion?`?v=${encodeURIComponent(assetVersion)}`:'';
+const {pickInk,adapt,tintFloor,contrast,luma}=await import(`./vendor/glasswork/adapt.mjs${suffix}`);
 export function materialForPixels(colors, previous, forcedKind) {
   const values=colors.map(luma).sort((a,b)=>a-b);
   const luminance=values.reduce((sum,n)=>sum+n,0)/values.length;

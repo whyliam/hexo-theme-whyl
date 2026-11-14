@@ -4,6 +4,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const head=fs.readFileSync(require.resolve('../layout/_partial/head.ejs'),'utf8');
 const footer=fs.readFileSync(require.resolve('../layout/_partial/after-footer.ejs'),'utf8');
 const glasswork=fs.readFileSync(require.resolve('../source/js/glasswork.js'),'utf8');
+const material=fs.readFileSync(require.resolve('../source/js/glass-material.mjs'),'utf8');
 const config=fs.readFileSync(require.resolve('../_config.yml'),'utf8');
 const packageJson=require('../package.json'),packageLock=require('../package-lock.json');
 const version=config.match(/^version:\s*(\S+)$/m)?.[1];
@@ -37,4 +38,6 @@ test('theme assets use the configured version as a cache key',()=>{
   for(const module of ['vendor/glasswork/lens.mjs','vendor/glasswork/adapt.mjs','vendor/glasswork/refract.mjs','glass-material.mjs']){
     assert.ok(glasswork.includes(`import(\`./${module}\${suffix}\`)`),`${module} must inherit the entry module cache key`);
   }
+  assert.match(material,/new URL\(import\.meta\.url\)\.searchParams\.get\('v'\)/);
+  assert.ok(material.includes('import(`./vendor/glasswork/adapt.mjs${suffix}`)'));
 });
