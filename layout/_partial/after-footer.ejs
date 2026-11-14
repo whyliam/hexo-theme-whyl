@@ -1,5 +1,6 @@
-<%- js({src:'js/liquid-glass.js', defer:true}) %>
-<%- js({src:'js/gallery-motion.js', defer:true}) %>
-<%- js({src:'js/gallery.js', defer:true}) %>
+<% const assetVersion = encodeURIComponent(theme.version || 'dev'); %>
+<script src="<%= url_for('js/liquid-glass.js') %>?v=<%= assetVersion %>" defer></script>
+<script src="<%= url_for('js/gallery-motion.js') %>?v=<%= assetVersion %>" defer></script>
+<script src="<%= url_for('js/gallery.js') %>?v=<%= assetVersion %>" defer></script>
 <%- partial('third-party/analytics') %>
-<script type="module" src="<%= url_for('js/glasswork.js') %>"></script>
+<script type="module" src="<%= url_for('js/glasswork.js') %>?v=<%= assetVersion %>"></script>

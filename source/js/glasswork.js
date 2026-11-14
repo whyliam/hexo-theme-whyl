@@ -1,7 +1,11 @@
-import {liquidGlass, isLensSupported} from './vendor/glasswork/lens.mjs';
-import {sampler} from './vendor/glasswork/adapt.mjs';
-import {createRefraction} from './vendor/glasswork/refract.mjs';
-import {materialForPixels} from './glass-material.mjs';
+const assetVersion=new URL(import.meta.url).searchParams.get('v');
+const suffix=assetVersion?`?v=${encodeURIComponent(assetVersion)}`:'';
+const [{liquidGlass,isLensSupported},{sampler},{createRefraction},{materialForPixels}]=await Promise.all([
+  import(`./vendor/glasswork/lens.mjs${suffix}`),
+  import(`./vendor/glasswork/adapt.mjs${suffix}`),
+  import(`./vendor/glasswork/refract.mjs${suffix}`),
+  import(`./glass-material.mjs${suffix}`)
+]);
 const options={rim:40,edge:1.1,power:2.6,dispersion:.15};
 const reduced=matchMedia('(prefers-reduced-transparency: reduce)');
 const forced=matchMedia('(forced-colors: active)');
