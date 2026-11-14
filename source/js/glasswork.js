@@ -23,15 +23,13 @@ async function readable(img){
   })());
   return cache.get(url);
 }
-function underPhoto(el){
-  if(el.matches('.liquid-link'))return document.querySelector('.featured-image img');
-  if(el.matches('.media-badge'))return el.closest('.album-cover')?.querySelector('img');
-  if(el.closest('.lightbox'))return null; // These controls sit over the dark dialog, not over its image.
+function underPhotos(el){
+  if(el.matches('.liquid-link'))return [document.querySelector('.featured-image img')].filter(Boolean);
+  if(el.matches('.media-badge'))return [el.closest('.album-cover')?.querySelector('img')].filter(Boolean);
+  if(el.closest('.lightbox'))return []; // These controls sit over the dark dialog, not over its image.
   const r=el.getBoundingClientRect();
-  for(const img of document.querySelectorAll('.featured-image img,.album-cover img,.post-gallery img')){
-    const b=img.getBoundingClientRect();if(b.bottom>r.top&&b.top<r.bottom&&b.right>r.left&&b.left<r.right)return img;
-  }
-  return null;
+  return [...document.querySelectorAll('.featured-image img,.album-cover img,.post-gallery img')]
+    .filter(img=>geometry.intersection(r,img.getBoundingClientRect()));
 }
 function fallbackMaterial(el){
   const kind=el.closest('.lightbox')?'dark':(dark.matches?'dark':'light');
@@ -46,7 +44,7 @@ function apply(el,material){
 function add(el){
   if(states.has(el))return;
   const state={lens:null,renderer:null,canvas:null,photo:null,material:fallbackMaterial(el),visible:true,token:0};
-  states.set(el,state);observer.observe(el);resize.observe(el);
+  states.set(el,state);el.classList.add('gw-glass');apply(el,state.material);observer.observe(el);resize.observe(el);
 }
 function decorate(){
   document.querySelectorAll('.liquid-link,.media-badge,.site-header,.lightbox button').forEach(add);
@@ -77,26 +75,30 @@ function webgl(el,state,img,photo){
 }
 async function update(el,state){
   if(!el.isConnected)return;
-  const token=++state.token,img=underPhoto(el);
-  if(el.matches('.site-header')&&!img){el.classList.remove('gw-glass');setLens(el,state,false);return;}
-  el.classList.add('gw-glass');
+  const token=++state.token,images=underPhotos(el);
   if(suppressed()||!state.visible){clearWebGL(el,state);setLens(el,state,false);if(suppressed())apply(el,state.material);return;}
-  state.material=fallbackMaterial(el);apply(el,state.material);
-  setLens(el,state,document.documentElement.dataset.glassRenderer!=='webgl');
-  if(!img||!img.naturalWidth)return;
-  const photo=await readable(img);if(token!==state.token||!photo||!el.isConnected)return;
-  const r=el.getBoundingClientRect(),b=img.getBoundingClientRect(),pos=getComputedStyle(img).objectPosition.split(' ').map(parseFloat);
-  const m=geometry.coverMapping(photo.naturalWidth,photo.naturalHeight,b.width,b.height,(pos[0]||0)/100,(pos[1]||0)/100);
+  setLens(el,state,!el.matches('.liquid-link')||document.documentElement.dataset.glassRenderer!=='webgl');
+  const r=el.getBoundingClientRect();
   const crop=document.createElement('canvas');crop.width=Math.max(1,Math.ceil(r.width/8));crop.height=Math.max(1,Math.ceil(r.height/8));
   const ctx=crop.getContext('2d',{willReadFrequently:true});if(!ctx)return;
-  ctx.drawImage(photo,(b.left+m.x-r.left)/8,(b.top+m.y-r.top)/8,m.width/8,m.height/8);
+  const fallback=fallbackMaterial(el),base=fallback.kind==='dark'?[23,33,39]:[242,245,247];
+  ctx.fillStyle=`rgb(${base.join(' ')})`;ctx.fillRect(0,0,crop.width,crop.height);
+  const sources=(await Promise.all(images.map(async img=>({img,photo:img.naturalWidth?await readable(img):null})))).filter(source=>source.photo);
+  if(token!==state.token||!el.isConnected)return;
+  for(const {img,photo} of sources){
+    const b=img.getBoundingClientRect(),visible=geometry.intersection(r,b);if(!visible)continue;
+    const pos=getComputedStyle(img).objectPosition.split(' ').map(parseFloat);
+    const m=geometry.coverMapping(photo.naturalWidth,photo.naturalHeight,b.width,b.height,(pos[0]||0)/100,(pos[1]||0)/100);
+    ctx.save();ctx.beginPath();ctx.rect((visible.left-r.left)/8,(visible.top-r.top)/8,visible.width/8,visible.height/8);ctx.clip();
+    ctx.drawImage(photo,(b.left+m.x-r.left)/8,(b.top+m.y-r.top)/8,m.width/8,m.height/8);ctx.restore();
+  }
   // Use upstream's wallpaper sampler, with the already aligned crop as its source.
   const sample=sampler();sample.capture(crop,r.width,r.height);const stats=sample.sample({x:0,y:0,w:r.width,h:r.height});
   if(!stats)return;
   const pixels=ctx.getImageData(0,0,crop.width,crop.height).data,colors=[];
   for(let i=0;i<pixels.length;i+=4)colors.push(pixels[i+3]===255?[pixels[i],pixels[i+1],pixels[i+2]]:[255,255,255]);
   if(colors.length){state.material=materialForPixels(colors,state.material.inkMode);apply(el,state.material);}
-  webgl(el,state,img,photo);
+  if(sources[0])webgl(el,state,sources[0].img,sources[0].photo);else clearWebGL(el,state);
 }
 function schedule(){if(!scheduled)scheduled=requestAnimationFrame(()=>{scheduled=0;decorate();for(const [el,state] of states){if(!el.isConnected){state.lens?.destroy();state.renderer?.setEnabled(false);state.canvas?.remove();observer.unobserve(el);resize.unobserve(el);states.delete(el);}else update(el,state);}});}
 const observer=new IntersectionObserver(entries=>{for(const entry of entries){const state=states.get(entry.target);if(state){state.visible=entry.isIntersecting;if(!state.visible)clearWebGL(entry.target,state);}}schedule();});

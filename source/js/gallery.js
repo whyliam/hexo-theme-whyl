@@ -17,6 +17,32 @@
       if (event.key === 'Escape' && nav.classList.contains('is-open')) { closeMenu(); toggle.focus(); }
     });
   }
+  const homeLink = nav && nav.querySelector('[data-nav-section="Home"]');
+  const aboutLink = nav && nav.querySelector('[data-nav-section="Profile"]');
+  const about = document.getElementById('about');
+  if (homeLink && aboutLink && about) {
+    const homePath = new URL(homeLink.href, location.href).pathname;
+    if (location.pathname === homePath) {
+      let sectionFrame = 0;
+      function markSection(section) {
+        nav.querySelectorAll('[aria-current]').forEach(function (link) { link.removeAttribute('aria-current'); });
+        if (section === 'about') aboutLink.setAttribute('aria-current', 'location');
+        else homeLink.setAttribute('aria-current', 'page');
+      }
+      function markVisibleSection() {
+        sectionFrame = 0;
+        const rect = about.getBoundingClientRect();
+        const header = document.querySelector('.site-header').getBoundingClientRect();
+        const visible = Math.max(0, Math.min(innerHeight, rect.bottom) - Math.max(header.bottom, rect.top));
+        markSection(visible >= Math.min(rect.height * .3, 120) ? 'about' : 'home');
+      }
+      function scheduleSection() { if (!sectionFrame) sectionFrame = requestAnimationFrame(markVisibleSection); }
+      scheduleSection();
+      window.addEventListener('scroll', scheduleSection, {passive:true});
+      window.addEventListener('resize', scheduleSection);
+      window.addEventListener('hashchange', scheduleSection);
+    }
+  }
   document.querySelectorAll('.post-content img').forEach(function (img) {
     img.decoding = 'async';
     img.loading = 'lazy';

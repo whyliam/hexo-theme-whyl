@@ -37,6 +37,7 @@
 @property --gw-density { syntax: '<number>'; inherits: true; initial-value: 0.35; }
 @property --gw-keep { syntax: '<number>'; inherits: true; initial-value: 1; }
 @property --gw-floor { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --gw-tint-a { syntax: '<number>'; inherits: true; initial-value: 0.06; }
 @property --gw-ink { syntax: '<color>'; inherits: true; initial-value: rgba(0, 0, 0, 0.86); }
 @property --gw-ink-2 { syntax: '<color>'; inherits: true; initial-value: rgba(60, 60, 67, 0.7); }
 @property --gw-ink-solid { syntax: '<color>'; inherits: true; initial-value: #000000; }
@@ -163,8 +164,15 @@
 /* Surface geometry, typography and interaction remain in gallery.css. */
 .gw-glass.gw-glass { corner-shape: round; }
 .site-header.gw-glass .site-brand,
-.site-header.gw-glass .site-navigation a { color: var(--gw-ink); }
+.site-header.gw-glass .site-navigation a { color: var(--gw-ink); transition: color 160ms linear, background 180ms ease; }
 .site-header.gw-glass .site-navigation a[aria-current] { background: var(--gw-row-active); }
+.site-header.gw-glass {
+  transition: --gw-density 160ms linear, --gw-keep 160ms linear, --gw-floor 160ms linear,
+    --gw-tint-a 160ms linear, --gw-m-tint 160ms linear, --gw-m-thin 160ms linear,
+    --gw-m-dense 160ms linear, --gw-m-blur 160ms linear, --gw-m-sat 160ms linear,
+    --gw-m-bri 160ms linear, color 160ms linear, background-color 160ms linear,
+    box-shadow 160ms linear;
+}
 .gw-glass[data-renderer="webgl"] { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .gw-refraction { position: absolute; pointer-events: none; z-index: 0; }
 .liquid-link > canvas { display: none; }

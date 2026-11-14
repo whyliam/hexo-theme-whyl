@@ -1,8 +1,22 @@
+<%
+  const menu = Object.entries(theme.menu || {Home: '/', Archives: '/archives/'});
+  const categoryNames = page.categories && typeof page.categories.toArray === 'function'
+    ? page.categories.toArray().map(function(category) { return String(category.name || '').toLowerCase(); })
+    : [];
+  const pageCategory = String(page.category || '').toLowerCase();
+  let currentSection = null;
+  if (page.path !== '404.html') {
+    if (is_archive()) currentSection = 'Archives';
+    else if (pageCategory === 'video' || categoryNames.includes('video')) currentSection = 'Video';
+    else if (pageCategory === 'photo' || categoryNames.includes('photo')) currentSection = 'Photo';
+    else if (is_home() || page.tag || is_post()) currentSection = 'Home';
+  }
+%>
 <header class="site-header wrap">
   <a class="site-brand" href="<%= url_for('/') %>"><%= config.title %><span class="brand-dot" aria-hidden="true"></span></a>
   <button class="menu-toggle" type="button" aria-controls="site-navigation" aria-expanded="false" hidden>菜单 <span aria-hidden="true">☰</span></button>
   <nav id="site-navigation" class="site-navigation" aria-label="主导航">
-    <% Object.entries(theme.menu || {Home: '/', Archives: '/archives/'}).forEach(function(entry) {
+    <% menu.forEach(function(entry) {
       const title = entry[0], link = entry[1];
       if (link === false || link == null) return;
       const labels = {Home: '作品', Profile: '关于', Instagram: 'Instagram', Photo: '照片', Video: '影像', Archives: '归档'};
@@ -11,8 +25,10 @@
       else if (title === 'Instagram' && link === true) href = theme.social && theme.social.instagram;
       else if (typeof link !== 'string') return;
       if (!href) return;
-      const active = title !== 'Profile' && (href === '/' ? is_home() : is_current(href)); %>
-      <a href="<%= url_for(href) %>"<% if (active) { %> aria-current="page"<% } %>><%= labels[title] || title %></a>
+      const knownSection = Object.prototype.hasOwnProperty.call(labels, title);
+      const active = title === currentSection || (!knownSection && typeof href === 'string' && is_current(href));
+      const external = /^https?:\/\//i.test(href); %>
+      <a href="<%= url_for(href) %>" data-nav-section="<%= title %>"<% if (active) { %> aria-current="page"<% } %><% if (external) { %> rel="external<%= title === 'Instagram' ? ' me' : '' %>"<% } %>><%= labels[title] || title %></a>
     <% }); %>
   </nav>
 </header>

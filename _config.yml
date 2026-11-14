@@ -24,14 +24,14 @@ motto: false
 # Menu Settings
 # ---------------------------------------------------------------
 
-# When running the site in a subdirectory (e.g. domain.tld/blog), remove the leading slash (/archives -> archives)
+# When running the site in a subdirectory (e.g. domain.tld/blog), remove the leading slash (/archives/ -> archives/)
 menu:
   Home: /
-  Profile: true # Do not change
-  Instagram: true # Show the Instagram
   Photo: /categories/photo/
   Video: /categories/video/
-  Archives: /archives
+  Archives: /archives/
+  Profile: true # Do not change
+  Instagram: true # Show the Instagram
 
 # Social Links
 # Key is the fontawsome keyname.

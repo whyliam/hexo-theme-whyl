@@ -45,6 +45,7 @@ menu:
   Video: /categories/video/
   Archives: /archives/
   Profile: true
+  Instagram: true
 social:
   home: https://naaln.com
   instagram: https://www.instagram.com/why_liam
@@ -99,7 +100,7 @@ MIT License.
 
 本主题使用 [Glasswork](https://github.com/kubai087/glasswork) 的本地源码：材质只调整背景、背景滤镜、阴影和文字颜色，不改变既有尺寸、圆角、字体、图标及文案。来源和改动见 `source/js/vendor/glasswork/UPSTREAM.md`，MIT 许可证和 NOTICE 随代码保留，不包含其壁纸素材。
 
-- 首页胶囊、覆盖照片的滚动导航、照片标记和看图按钮使用材质；图片外文字、相册卡片、分类栏不新增玻璃。
+- 首页胶囊、全站滚动导航、照片标记和看图按钮使用材质；图片外文字、相册卡片、分类栏不新增玻璃。导航始终使用同一套 Glasswork 材质，照片进入其背后时按实际覆盖面积连续取样，不在图片边缘切换两套玻璃。
 - Chromium 使用 `lens.mjs` 的 SVG 背景折射。小于 32px 的照片标记按上游限制只使用 CSS 材质。
 - 首页胶囊在非 SVG 路径使用 `refract.mjs` WebGL2 回退，继续按原照片裁切焦点对齐；不支持 WebGL2 时保留 CSS 材质。导航在非 Chromium 下不模拟任意 DOM 背景折射。
 - `adapt.mjs` 负责背景采样与文字选择，主题另外检查采样像素经色调处理后的对比度，调整最小色层以达到 4.5:1。有图片时自动选择浅／深材质，主题没有新增外观切换按钮；无可读背景时采用系统外观默认材质。

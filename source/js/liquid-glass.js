@@ -5,7 +5,12 @@
     return {width:imageWidth * scale, height:imageHeight * scale,
       x:(boxWidth-imageWidth*scale)*x, y:(boxHeight-imageHeight*scale)*y};
   }
-  const api={coverMapping};
+  function intersection(a, b) {
+    const left=Math.max(a.left,b.left),top=Math.max(a.top,b.top);
+    const right=Math.min(a.right,b.right),bottom=Math.min(a.bottom,b.bottom);
+    return right>left&&bottom>top?{left,top,right,bottom,width:right-left,height:bottom-top}:null;
+  }
+  const api={coverMapping,intersection};
   if(typeof module==='object'&&module.exports)module.exports=api;else {
     root.WhyLGlassGeometry=api;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)'),seen=new WeakSet();
