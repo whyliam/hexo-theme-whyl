@@ -1,0 +1,178 @@
+/* Adapted from Glasswork; see source/js/vendor/glasswork/LICENSE. Geometry unchanged. */
+:root { --gw-u: 1px; }
+/*
+ * Lumno's liquid glass, as on its New Tab page (lumno-extension:
+ * src/newtab/glass-style.css). A surface becomes glass with four
+ * declarations: background (the tint), backdrop-filter (blur and tone, then
+ * the rim lens from lens.js), box-shadow (rim light, bevel and shadow) and
+ * color (the ink).
+ *
+ * Two materials, chosen per surface by data-kind:
+ * - light: clear glass with dark ink. A thin white wash, the scene behind
+ *   lightly blurred and its colors deepened (saturate) and lifted
+ *   (brightness above 1, which screens toward white), so the glass takes
+ *   its color from behind instead of turning milky.
+ * - dark: smoky glass with light ink, for the dark theme and for dark
+ *   patches of wallpaper under the light theme. Brightness below 1 dims
+ *   the scene like a multiply with black instead of muddying it.
+ *
+ * The playground sets the materials' numbers on the stage (--gw-l-* and
+ * --gw-d-*); each surface sets what it read off the wallpaper under it:
+ * --gw-density (0 thin, 1 dense), --gw-keep (the share of the saturation boost
+ * to keep) and --gw-floor (the least tint its text needs). Sizes are in --gw-u,
+ * one Lumno pixel at the stage's scale.
+ */
+
+@property --gw-m-tint { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+@property --gw-m-k { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --gw-m-thin { syntax: '<number>'; inherits: true; initial-value: 0.06; }
+@property --gw-m-dense { syntax: '<number>'; inherits: true; initial-value: 0.22; }
+@property --gw-m-blur { syntax: '<number>'; inherits: true; initial-value: 2; }
+@property --gw-m-sat { syntax: '<number>'; inherits: true; initial-value: 1.8; }
+@property --gw-m-bri { syntax: '<number>'; inherits: true; initial-value: 1.06; }
+@property --gw-m-con { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --gw-m-catch { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --gw-m-bevel { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --gw-m-shadow { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --gw-density { syntax: '<number>'; inherits: true; initial-value: 0.35; }
+@property --gw-keep { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --gw-floor { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --gw-ink { syntax: '<color>'; inherits: true; initial-value: rgba(0, 0, 0, 0.86); }
+@property --gw-ink-2 { syntax: '<color>'; inherits: true; initial-value: rgba(60, 60, 67, 0.7); }
+@property --gw-ink-solid { syntax: '<color>'; inherits: true; initial-value: #000000; }
+@property --gw-ink-a { syntax: '<number>'; inherits: true; initial-value: 0.86; }
+@property --gw-well { syntax: '<color>'; inherits: true; initial-value: rgba(0, 0, 0, 0.15); }
+@property --gw-row-hover { syntax: '<color>'; inherits: true; initial-value: rgba(0, 0, 0, 0.045); }
+@property --gw-row-active { syntax: '<color>'; inherits: true; initial-value: rgba(0, 0, 0, 0.09); }
+
+/* ---------- The two materials ---------- */
+
+.gw-glass.gw-glass {
+  --gw-m-tint: var(--gw-l-tint, #ffffff);
+  --gw-m-k: var(--gw-l-k, 1);
+  --gw-m-thin: var(--gw-l-thin, 0.06);
+  --gw-m-dense: var(--gw-l-dense, 0.22);
+  --gw-m-blur: var(--gw-l-blur, 2);
+  --gw-m-sat: var(--gw-l-sat, 1.8);
+  --gw-m-bri: var(--gw-l-bri, 1.06);
+  --gw-m-con: var(--gw-l-con, 1);
+  --gw-m-catch: var(--gw-l-catch, 1);
+  --gw-m-bevel: var(--gw-l-bevel, 1);
+  --gw-m-shadow: var(--gw-l-shadow, 1);
+  /* Dark ink: one color in fixed steps, multiplied into the glass so it
+     picks up the glass's color and keeps its contrast. */
+  --gw-ink: rgba(0, 0, 0, 0.86);
+  --gw-ink-2: rgba(60, 60, 67, 0.7);
+  --gw-ink-solid: #000000;
+  --gw-ink-a: 0.86;
+  --gw-well: rgba(0, 0, 0, 0.15);
+  --gw-row-hover: rgba(0, 0, 0, 0.06);
+  --gw-row-active: rgba(0, 0, 0, 0.1);
+  --gw-blend: multiply;
+}
+
+/* A capsule (its radius at least half its height) keeps round ends: a
+   superellipse on a radius that is already half the box flattens them.
+   The page marks capsules as they are sized (data-pill). */
+
+
+.gw-glass[data-kind="dark"] {
+  --gw-m-tint: var(--gw-d-tint, #1e1e22);
+  --gw-m-k: var(--gw-d-k, 1);
+  --gw-m-thin: var(--gw-d-thin, 0.16);
+  --gw-m-dense: var(--gw-d-dense, 0.38);
+  --gw-m-blur: var(--gw-d-blur, 2);
+  --gw-m-sat: var(--gw-d-sat, 1.6);
+  --gw-m-bri: var(--gw-d-bri, 0.8);
+  --gw-m-con: var(--gw-d-con, 1);
+  --gw-m-catch: var(--gw-d-catch, 1);
+  --gw-m-bevel: var(--gw-d-bevel, 1);
+  --gw-m-shadow: var(--gw-d-shadow, 1);
+  /* Light ink adds light rather than covering. */
+  --gw-ink: rgba(255, 255, 255, 0.94);
+  --gw-ink-2: rgba(235, 235, 245, 0.64);
+  --gw-ink-solid: #ffffff;
+  --gw-ink-a: 0.94;
+  --gw-well: rgba(255, 255, 255, 0.22);
+  --gw-row-hover: rgba(255, 255, 255, 0.08);
+  --gw-row-active: rgba(255, 255, 255, 0.14);
+  --gw-blend: plus-lighter;
+}
+
+/* ---------- The four declarations ---------- */
+
+.gw-glass.gw-glass {
+  /* The tint opacity setting (--gw-m-k, 0-1.5) scales the tint. Below 1 the
+     tone in the filter and the bevel thin with it (--gw-veil-k), so at 0 only
+     the blur, the rim and the shadow are left: clear glass. The tint never
+     goes below the least opacity the surface's text needs (--gw-floor). */
+  --gw-veil-k: min(1, var(--gw-m-k));
+  --gw-tint-a: min(0.95, max(var(--gw-floor), calc((var(--gw-m-thin) + (var(--gw-m-dense) - var(--gw-m-thin)) * var(--gw-density)) * var(--gw-m-k))));
+  --gw-filter:
+    blur(calc(var(--gw-m-blur) * var(--gw-u, 1px)))
+    saturate(var(--gw-m-sat))
+    contrast(calc(1 + (var(--gw-m-con) - 1) * var(--gw-veil-k)))
+    brightness(calc(1 + (var(--gw-m-bri) - 1) * var(--gw-veil-k)))
+    saturate(var(--gw-keep));
+
+  /* Continuous corners, where the browser draws them (Chromium 139+);
+     elsewhere the plain border-radius stays. */
+  color: var(--gw-ink);
+  background: color-mix(in srgb, var(--gw-m-tint) calc(var(--gw-tint-a) * 100%), transparent);
+  -webkit-backdrop-filter: var(--gw-filter);
+  backdrop-filter: var(--gw-filter) var(--glass-lens,);
+  /* Toggled for a moment to make Safari redraw the glass (playground.js). */
+}
+
+/* Light glass: light caught where the rim faces it, on the top left and
+   fainter on the bottom right, over a faint even line that keeps the
+   outline; a firmer hairline and a soft shadow; and the bevel, soft bands
+   just inside the edge, so the plate reads as a thick slab. The bands stay
+   within a few pixels of the edge: a box shadow only mixes plain white and
+   black, so a wide band washes the scene's color out. */
+.gw-glass.gw-glass {
+  box-shadow:
+    inset calc(1.5 * var(--gw-u)) calc(1.5 * var(--gw-u)) var(--gw-u) calc(-1 * var(--gw-u)) rgb(255 255 255 / calc(1 * var(--gw-m-catch))),
+    inset calc(-1.5 * var(--gw-u)) calc(-1.5 * var(--gw-u)) var(--gw-u) calc(-1 * var(--gw-u)) rgb(255 255 255 / calc(0.6 * var(--gw-m-catch))),
+    inset 0 0 0 calc(0.5 * var(--gw-u)) rgb(255 255 255 / calc(0.3 * var(--gw-m-catch))),
+    0 0 0 calc(0.5 * var(--gw-u)) rgb(0 0 0 / calc(0.12 * var(--gw-m-shadow))),
+    0 calc(4 * var(--gw-u)) calc(16 * var(--gw-u)) rgb(0 0 0 / calc(0.1 * var(--gw-m-shadow))),
+    inset 0 calc(6 * var(--gw-u)) calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(255 255 255 / calc(0.5 * var(--gw-veil-k) * var(--gw-m-bevel))),
+    inset calc(4 * var(--gw-u)) 0 calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(255 255 255 / calc(0.22 * var(--gw-veil-k) * var(--gw-m-bevel))),
+    inset calc(-4 * var(--gw-u)) 0 calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(255 255 255 / calc(0.12 * var(--gw-veil-k) * var(--gw-m-bevel))),
+    inset 0 calc(-6 * var(--gw-u)) calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(0 0 0 / calc(0.06 * var(--gw-veil-k) * var(--gw-m-bevel)));
+}
+
+/* Dark glass: the same light, dimmer, with a darker outline and shadow.
+   The bottom shade stays faint: over a light wallpaper dark glass is a mid
+   tone, which black only muddies. */
+.gw-glass[data-kind="dark"] {
+  box-shadow:
+    inset var(--gw-u) var(--gw-u) calc(0.5 * var(--gw-u)) calc(-0.5 * var(--gw-u)) rgb(255 255 255 / calc(0.46 * var(--gw-m-catch))),
+    inset calc(-1 * var(--gw-u)) calc(-1 * var(--gw-u)) calc(0.5 * var(--gw-u)) calc(-0.5 * var(--gw-u)) rgb(255 255 255 / calc(0.18 * var(--gw-m-catch))),
+    inset 0 0 0 calc(0.5 * var(--gw-u)) rgb(255 255 255 / calc(0.06 * var(--gw-m-catch))),
+    0 0 0 calc(0.5 * var(--gw-u)) rgb(0 0 0 / calc(0.28 * var(--gw-m-shadow))),
+    0 calc(4 * var(--gw-u)) calc(14 * var(--gw-u)) rgb(0 0 0 / calc(0.22 * var(--gw-m-shadow))),
+    inset 0 calc(6 * var(--gw-u)) calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(255 255 255 / calc(0.18 * var(--gw-veil-k) * var(--gw-m-bevel))),
+    inset calc(4 * var(--gw-u)) 0 calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(255 255 255 / calc(0.07 * var(--gw-veil-k) * var(--gw-m-bevel))),
+    inset calc(-4 * var(--gw-u)) 0 calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(255 255 255 / calc(0.04 * var(--gw-veil-k) * var(--gw-m-bevel))),
+    inset 0 calc(-6 * var(--gw-u)) calc(8 * var(--gw-u)) calc(-6 * var(--gw-u)) rgb(0 0 0 / calc(0.08 * var(--gw-veil-k) * var(--gw-m-bevel)));
+}
+
+
+/* Surface geometry, typography and interaction remain in gallery.css. */
+.gw-glass.gw-glass { corner-shape: round; }
+.site-header.gw-glass .site-brand,
+.site-header.gw-glass .site-navigation a { color: var(--gw-ink); }
+.site-header.gw-glass .site-navigation a[aria-current] { background: var(--gw-row-active); }
+.gw-glass[data-renderer="webgl"] { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.gw-refraction { position: absolute; pointer-events: none; z-index: 0; }
+.liquid-link > canvas { display: none; }
+@supports not (backdrop-filter: blur(1px)) {
+  .gw-glass.gw-glass { background: var(--gw-m-tint); }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .gw-glass.gw-glass, .gw-glass[data-renderer="webgl"] { background: var(--gw-m-tint); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .gw-refraction { display: none; }
+}
+@media (forced-colors:active) { .gw-glass.gw-glass { background: Canvas; color: CanvasText; box-shadow: none; } }

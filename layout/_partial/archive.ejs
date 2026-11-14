@@ -1,34 +1,7 @@
-<% var last = 0; %>
-<div class="archive">
-  <% page.posts.each(function(post, i){ %>
-  <% var year = post.date.year(); %>
-  <% if (last != year){ %>
-  <% if (last != 0){ %>
-      </ul>
-    </div>
-  <% } %>
-    <% last = year %>
-    <div class="year">
-    <a href="<%- url_for(config.archive_dir + '/' + year) %>" ><%= year %></a>
-    </div>
-    <div class="main">
-      <div class="line"></div>
-      <ul>
-  <% } %>
-          <li>
-          <a href="<%- url_for(post.path) %>"><%= post.title %></a>
-          </li>
-        <% }) %>
-      </ul>
-    </div>
-</div>
-
-
-<% if (page.total > 1){ %>
-  <nav class="pagination">
-    <%- paginator({
-      prev_text: '<i class="fa fa-chevron-left" aria-hidden="true"></i>',
-      next_text: '<i class="fa fa-chevron-right" aria-hidden="true"></i>'
-    }) %>
-  </nav>
+<section class="archive wrap" aria-labelledby="archive-title"><header class="post-header"><h1 id="archive-title">归档</h1><p>沿着时间，回看走过的地方。</p></header>
+<% let lastYear = ''; page.posts.each(function(post) { const year = date(post.date, 'YYYY'); if (year !== lastYear) { if (lastYear) { %></ul></section><% } lastYear = year; %>
+<section class="archive-year"><h2><%= year %></h2><ul>
 <% } %>
+<li><a href="<%= url_for(post.path) %>"><time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MM.DD') %></time><span><%= post.title || '未命名' %></span></a></li>
+<% }); if (lastYear) { %></ul></section><% } else { %><p class="empty-state">还没有记录。</p><% } %>
+<%- partial('pagination') %></section>

@@ -1,0 +1,109 @@
+import {liquidGlass, isLensSupported} from './vendor/glasswork/lens.mjs';
+import {sampler} from './vendor/glasswork/adapt.mjs';
+import {createRefraction} from './vendor/glasswork/refract.mjs';
+import {materialForPixels} from './glass-material.mjs';
+const options={rim:40,edge:1.1,power:2.6,dispersion:.15};
+const reduced=matchMedia('(prefers-reduced-transparency: reduce)');
+const forced=matchMedia('(forced-colors: active)');
+const dark=matchMedia('(prefers-color-scheme: dark)');
+const states=new Map(),cache=new Map();
+let scheduled=0;
+const geometry=window.WhyLGlassGeometry;
+function suppressed(){return reduced.matches||forced.matches;}
+async function readable(img){
+  const url=img.currentSrc||img.src;
+  if(!url)return null;
+  if(!cache.has(url))cache.set(url,(async()=>{
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
+    let objectURL;
+    try{
+      const response=await fetch(url,{mode:'cors',cache:'reload',signal:controller.signal});if(!response.ok)return null;
+      objectURL=URL.createObjectURL(await response.blob());const photo=new Image();photo.src=objectURL;await photo.decode();return photo;
+    }catch{return null;}finally{clearTimeout(timeout);if(objectURL)URL.revokeObjectURL(objectURL);}
+  })());
+  return cache.get(url);
+}
+function underPhoto(el){
+  if(el.matches('.liquid-link'))return document.querySelector('.featured-image img');
+  if(el.matches('.media-badge'))return el.closest('.album-cover')?.querySelector('img');
+  if(el.closest('.lightbox'))return null; // These controls sit over the dark dialog, not over its image.
+  const r=el.getBoundingClientRect();
+  for(const img of document.querySelectorAll('.featured-image img,.album-cover img,.post-gallery img')){
+    const b=img.getBoundingClientRect();if(b.bottom>r.top&&b.top<r.bottom&&b.right>r.left&&b.left<r.right)return img;
+  }
+  return null;
+}
+function fallbackMaterial(el){
+  const kind=el.closest('.lightbox')?'dark':(dark.matches?'dark':'light');
+  const pixels=kind==='dark'?[[23,33,39]]:[[242,245,247]];
+  return materialForPixels(pixels,null,kind);
+}
+function apply(el,material){
+  el.dataset.kind=material.kind;
+  for(const [name,value] of Object.entries({'--gw-density':material.density,'--gw-keep':material.keep,'--gw-floor':material.alpha,'--gw-tint-a':material.alpha,'--gw-ink':`rgb(${material.text.join(' ')})`}))el.style.setProperty(name,String(value));
+  el.dataset.glassContrast=material.minContrast.toFixed(3);
+}
+function add(el){
+  if(states.has(el))return;
+  const state={lens:null,renderer:null,canvas:null,photo:null,material:fallbackMaterial(el),visible:true,token:0};
+  states.set(el,state);observer.observe(el);resize.observe(el);
+}
+function decorate(){
+  document.querySelectorAll('.liquid-link,.media-badge,.site-header,.lightbox button').forEach(add);
+}
+function clearWebGL(el,state){if(state.renderer)state.renderer.setEnabled(false);delete el.dataset.renderer;}
+function setLens(el,state,on){
+  if(!state.lens&&on)state.lens=liquidGlass(el,options);
+  else state.lens?.update({enabled:on});
+}
+function webgl(el,state,img,photo){
+  if(!el.matches('.liquid-link')||isLensSupported()&&document.documentElement.dataset.glassRenderer!=='webgl')return;
+  if(!state.canvas){
+    const canvas=document.createElement('canvas');canvas.className='gw-refraction';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;el.before(canvas);state.canvas=canvas;
+    canvas.addEventListener('refractionfailed',()=>{clearWebGL(el,state);el.dataset.glassFallback='texture-or-context';});
+    canvas.addEventListener('webglcontextrestored',()=>{state.renderer=null;schedule();});
+  }
+  const r=el.getBoundingClientRect(),parent=el.offsetParent.getBoundingClientRect();
+  Object.assign(state.canvas.style,{left:(r.left-parent.left)+'px',top:(r.top-parent.top)+'px',width:r.width+'px',height:r.height+'px',borderRadius:getComputedStyle(el).borderRadius});
+  const box=img.getBoundingClientRect(),pos=getComputedStyle(img).objectPosition.split(' ').map(parseFloat);
+  const m=geometry.coverMapping(photo.naturalWidth,photo.naturalHeight,box.width,box.height,(pos[0]||0)/100,(pos[1]||0)/100);
+  state.source={el:photo,moving:false,cover:{width:m.width,height:m.height,x:r.left-box.left-m.x,y:r.top-box.top-m.y}};
+  if(!state.renderer){
+    try{state.renderer=createRefraction(state.canvas,{source:()=>state.source,surfaces:()=>{
+      const a=state.material,b=el.getBoundingClientRect();return [{x:0,y:0,w:b.width,h:b.height,radius:Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius),b.width/2,b.height/2),rim:Math.max(4,Math.min(40,b.width/3.5,b.height/3.5)),edge:1.1,power:2.6,dispersion:.15,blur:2,saturate:a.saturate,contrast:1,brightness:a.brightness,keep:a.keep}];
+    }});}catch{state.renderer=null;}
+  }
+  if(state.renderer){el.dataset.renderer='webgl';state.renderer.setEnabled(true);setLens(el,state,false);}
+}
+async function update(el,state){
+  if(!el.isConnected)return;
+  const token=++state.token,img=underPhoto(el);
+  if(el.matches('.site-header')&&!img){el.classList.remove('gw-glass');setLens(el,state,false);return;}
+  el.classList.add('gw-glass');
+  if(suppressed()||!state.visible){clearWebGL(el,state);setLens(el,state,false);if(suppressed())apply(el,state.material);return;}
+  state.material=fallbackMaterial(el);apply(el,state.material);
+  setLens(el,state,document.documentElement.dataset.glassRenderer!=='webgl');
+  if(!img||!img.naturalWidth)return;
+  const photo=await readable(img);if(token!==state.token||!photo||!el.isConnected)return;
+  const r=el.getBoundingClientRect(),b=img.getBoundingClientRect(),pos=getComputedStyle(img).objectPosition.split(' ').map(parseFloat);
+  const m=geometry.coverMapping(photo.naturalWidth,photo.naturalHeight,b.width,b.height,(pos[0]||0)/100,(pos[1]||0)/100);
+  const crop=document.createElement('canvas');crop.width=Math.max(1,Math.ceil(r.width/8));crop.height=Math.max(1,Math.ceil(r.height/8));
+  const ctx=crop.getContext('2d',{willReadFrequently:true});if(!ctx)return;
+  ctx.drawImage(photo,(b.left+m.x-r.left)/8,(b.top+m.y-r.top)/8,m.width/8,m.height/8);
+  // Use upstream's wallpaper sampler, with the already aligned crop as its source.
+  const sample=sampler();sample.capture(crop,r.width,r.height);const stats=sample.sample({x:0,y:0,w:r.width,h:r.height});
+  if(!stats)return;
+  const pixels=ctx.getImageData(0,0,crop.width,crop.height).data,colors=[];
+  for(let i=0;i<pixels.length;i+=4)colors.push(pixels[i+3]===255?[pixels[i],pixels[i+1],pixels[i+2]]:[255,255,255]);
+  if(colors.length){state.material=materialForPixels(colors,state.material.inkMode);apply(el,state.material);}
+  webgl(el,state,img,photo);
+}
+function schedule(){if(!scheduled)scheduled=requestAnimationFrame(()=>{scheduled=0;decorate();for(const [el,state] of states){if(!el.isConnected){state.lens?.destroy();state.renderer?.setEnabled(false);state.canvas?.remove();observer.unobserve(el);resize.unobserve(el);states.delete(el);}else update(el,state);}});}
+const observer=new IntersectionObserver(entries=>{for(const entry of entries){const state=states.get(entry.target);if(state){state.visible=entry.isIntersecting;if(!state.visible)clearWebGL(entry.target,state);}}schedule();});
+const resize=new ResizeObserver(schedule);
+decorate();schedule();
+new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
+document.addEventListener('load',schedule,true);document.addEventListener('visibilitychange',()=>{if(document.hidden){for(const [el,state]of states)clearWebGL(el,state);}else schedule();});
+for(const media of [reduced,forced,dark])media.addEventListener('change',schedule);
+window.addEventListener('pageshow',schedule);

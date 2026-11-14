@@ -1,12 +1,1 @@
-<footer>
-    <a href="#top" class="scroll-top"><i class="fa fa-long-arrow-up" aria-hidden="true"></i></a>
-    <div class="copyright">
-        <span>© <%=theme.since%> - <%= date(Date.now(), 'YYYY') %> </span> | 
-        <span>由 Hexo 强力驱动</span> | 
-        <span>主题 - WhyL</span> | 
-        <span>Hosted by <a style="display:inline-block;border-bottom:none" target="_blank" rel="external nofollow" href="https://www.upyun.com/"><img width="60px" style="margin-bottom:-6px;" src="https://photo.naaln.com/img/upyun.svg"></img></a></span>
-    </div>
-    <div class="analysis">
-        <%- partial('third-party/analytics/busuanzi-counter') %>
-    </div>
-</footer>
+<footer class="site-footer wrap"><p>© <%= theme.since || date(Date.now(), 'YYYY') %>–<%= date(Date.now(), 'YYYY') %> <%= config.author || config.title %></p><p>由 <a href="https://hexo.io/" rel="external">Hexo</a> 驱动 · WhyL</p><%- partial('third-party/analytics/busuanzi-counter') %><a href="#top">回到顶部 ↑</a></footer>

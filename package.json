@@ -1,7 +1,20 @@
 {
   "name": "hexo-theme-whyl",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "devDependencies": {
+    "hexo": "^8.0.0",
+    "hexo-generator-archive": "^2.0.0",
+    "hexo-generator-category": "^2.0.0",
+    "hexo-generator-index": "^4.0.0",
+    "hexo-generator-tag": "^2.0.0",
+    "hexo-renderer-ejs": "^2.0.0",
+    "hexo-renderer-marked": "^7.0.0",
+    "hexo-server": "^3.0.0"
+  },
+  "scripts": {
+    "preview": "node tools/preview.js",
+    "build:preview": "node tools/preview.js --build",
+    "test": "node --test test/*.test.js"
   }
 }

@@ -18,7 +18,7 @@ since: 2003
 
 # If you want to show the motto
 # otherwise It shows the site description
-motto: true
+motto: false
 
 # ---------------------------------------------------------------
 # Menu Settings
@@ -40,7 +40,7 @@ social:
   #LinkLabel: Link
   home: https://naaln.com
   weibo: https://weibo.com/210002567
-  github-alt: https://github.com/liszd
+  github-alt: https://github.com/whyliam
   instagram: https://www.instagram.com/why_liam
 
 # Sidebar Avatar
@@ -93,11 +93,9 @@ wechatpay: http://pics.naaln.com/48910e01gw1evkbf70jcgj20cg0cidh5.jpg
 alipay: http://pics.naaln.com/48910e01gw1evkbfendrjj20ci0ci0uf.jpg
 
 
+# Historical client-side Instagram API is retired. Use the social link above.
 instagram:
-  enable: true
-  userId: 428473662
-  accessToken: 428473662.1677ed0.9774cad131cc42c3a4ec95a3b295fd40
-  sortBy: random
+  enable: false
 
 baidu_push: true
 
@@ -132,4 +130,10 @@ google_site_verification: ByVfaP_E3b9ZYRUGhNAUFSQKL8mJQwUehpQwoxJ5n-c
 baidu_site_verification: 
 qihu_site_verification: 
 
-version: 0.0.1
+# Home-page copy; leave title empty to use the site's subtitle.
+gallery:
+  title:
+  description: 旅行、日常，以及值得记住的瞬间。
+  about:
+
+version: 0.1.0

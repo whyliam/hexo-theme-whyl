@@ -1,13 +1,10 @@
-<article id="<%= post.layout %>-<%= post.slug %>" class="post article-type-<%= post.layout %>">
-    <%- partial('post/title') %>
-    <%- partial('post/photos') %>
-    <%- post.content %>
-    <div class="inner-wrap">
-        <%- partial('post/date') %>
-        <%- partial('post/category') %>
-        <%- partial('post/tag') %>
-    </div>
-    <div class="post-divide"></div>
-    <%- partial('post/nav') %>
-    <%- partial('third-party/comments') %>
+<article class="post wrap">
+  <header class="post-header"><a class="back-link" href="<%= url_for('/') %>#albums">返回相册</a>
+  <h1><%= post.title || (page.path === '404.html' ? '页面未找到' : '未命名') %></h1>
+  <div class="post-meta"><% if (post.date) { %><time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'YYYY年M月D日') %></time><% } %>
+  <% if (post.tags && post.tags.length) { %><span><%= post.tags.toArray().map(tag => tag.name).join('、') %></span><% } %></div></header>
+  <%- partial('post/photos', {post:post}) %>
+  <div class="post-content"><%- post.content %></div>
+  <%- partial('post/nav', {post:post}) %>
+  <%- partial('third-party/comments') %>
 </article>

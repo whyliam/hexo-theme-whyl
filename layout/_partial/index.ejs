@@ -1,12 +1,42 @@
-<% page.posts.each(function(post){ %>
-    <%- partial('index-article', {post: post, index: true}) %>
-<% }) %>
-
-<% if (page.total > 1){ %>
-  <nav class="pagination">
-    <%- paginator({
-      prev_text: '<i class="fa fa-chevron-left" aria-hidden="true"></i>',
-      next_text: '<i class="fa fa-chevron-right" aria-hidden="true"></i>'
-    }) %>
+<% const posts = page.posts.toArray();
+const settings = theme.gallery || {};
+const firstPage = is_home() && (!page.current || page.current === 1);
+const featured = firstPage && (posts.find(post => post.featured && gallery_media(post).cover) || posts.find(post => { const media = gallery_media(post); return media.cover && !media.video; }) || posts.find(post => gallery_media(post).cover));
+%>
+<% if (firstPage) { %>
+<section class="gallery-intro wrap">
+  <div><h1><%= settings.title || config.subtitle || config.description || config.title %></h1>
+  <p><%= settings.description || '旅行、日常，以及值得记住的瞬间。' %></p></div>
+  <a class="text-link" href="#albums">浏览相册 <span aria-hidden="true">↓</span></a>
+</section>
+<% if (featured) { const media = gallery_media(featured); %>
+<figure class="featured wrap">
+  <div class="featured-stage">
+  <a class="featured-image image-surface" href="<%= url_for(featured.path) %>" aria-label="查看相册：<%= featured.title %>">
+    <img src="<%= url_for(media.cover.src) %>" alt="<%= media.cover.alt || featured.title %>" fetchpriority="high" decoding="async" style="object-position:<%= media.cover.position %>"<% if (media.cover.width && media.cover.height) { %> width="<%= media.cover.width %>" height="<%= media.cover.height %>"<% } %>>
+  </a>
+  <a class="liquid-link" href="<%= url_for(featured.path) %>" aria-label="打开相册：<%= featured.title %>"><canvas aria-hidden="true"></canvas><span>打开相册 <span aria-hidden="true">↗</span></span></a>
+  </div>
+  <figcaption><a href="<%= url_for(featured.path) %>"><%= featured.title %></a><span><%= date(featured.date, 'YYYY.MM') %><% if (featured.tags && featured.tags.length) { %> / <%= featured.tags.toArray().map(tag => tag.name).join('、') %><% } %></span></figcaption>
+</figure>
+<% } %>
+<% } %>
+<section class="album-section wrap" id="albums" aria-labelledby="albums-title">
+  <header class="section-heading"><h2 id="albums-title"><%= page.category || page.tag || (firstPage ? '相册' : '更多相册') %></h2><span><%= site.posts.length %> 篇记录</span></header>
+  <nav class="album-filters" aria-label="相册分类">
+    <a href="<%= url_for('/') %>#albums"<% if (is_home()) { %> aria-current="page"<% } %>>全部</a>
+    <% site.categories.toArray().forEach(function(category) { %>
+      <a href="<%= url_for(category.path) %>"<% if (page.category === category.name) { %> aria-current="page"<% } %>><%= ({photo:'照片', video:'影像'})[category.name] || category.name %></a>
+    <% }); %>
   </nav>
+  <% if (posts.length) { %>
+  <div class="album-grid"><% posts.forEach(function(post, i) { %><%- partial('index-article', {post: post, cardIndex: i}) %><% }); %></div>
+  <% } else { %><p class="empty-state">这里还没有相册。<a href="<%= url_for('/') %>">返回全部作品</a></p><% } %>
+  <%- partial('pagination') %>
+</section>
+<% if (firstPage) { %>
+<section class="about-section" id="about" aria-labelledby="about-title"><div class="wrap about-inner">
+  <div><h2 id="about-title"><%= config.author || config.title %></h2><p><%= settings.about || config.description || '用照片留住走过的地方。' %></p></div>
+  <div class="about-links"><% Object.entries(theme.social || {}).forEach(function(entry) { %><a href="<%= entry[1] %>" rel="me"><%= ({home:'个人主页', 'github-alt':'GitHub', github:'GitHub', weibo:'微博', instagram:'Instagram'})[entry[0]] || entry[0] %></a><% }); %></div>
+</div></section>
 <% } %>

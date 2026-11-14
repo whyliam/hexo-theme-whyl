@@ -1,12 +1,9 @@
 <%- partial('_partial/head') %>
-<body>
-    <%- partial('_partial/header') %>
-    <section class="container" id="main">
-        <div class="post-holder">
-            <%- body %>
-        </div>
-    </section>
-    <%- partial('_partial/footer') %>
-    <%- partial('_partial/after-footer') %>
+<body id="top">
+  <a class="skip-link" href="#main">跳至内容</a>
+  <%- partial('_partial/header') %>
+  <main class="site-main" id="main" tabindex="-1"><%- body %></main>
+  <%- partial('_partial/footer') %>
+  <%- partial('_partial/after-footer') %>
 </body>
 </html>

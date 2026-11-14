@@ -1,23 +1,8 @@
-<% if (theme.busuanzi_count.enable) {%>
-
+<% const counter = theme.busuanzi_count || {}; if (counter.enable) { %>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <div class="busuanzi-count">
-
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  <% if (theme.busuanzi_count.site_uv) {%>
-    <span class="site-uv">
-    <%- theme.busuanzi_count.site_uv_header %>
-    <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    <%= theme.busuanzi_count.site_uv_footer %></span>
-  <% } %>
-
-  <% if (theme.busuanzi_count.site_pv) {%>
-    <span class="site-pv">
-    <%- theme.busuanzi_count.site_pv_header %>
-    <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
-    <%- theme.busuanzi_count.site_pv_footer %></span>
-  <% } %>
-  
+  <% if (counter.site_uv) { %><span id="busuanzi_container_site_uv" style="display:none">访客 <span id="busuanzi_value_site_uv"></span></span><% } %>
+  <% if (counter.site_pv) { %><span id="busuanzi_container_site_pv" style="display:none">浏览 <span id="busuanzi_value_site_pv"></span></span><% } %>
+  <% if (counter.page_pv && is_post()) { %><span id="busuanzi_container_page_pv" style="display:none">本页浏览 <span id="busuanzi_value_page_pv"></span></span><% } %>
 </div>
-
 <% } %>

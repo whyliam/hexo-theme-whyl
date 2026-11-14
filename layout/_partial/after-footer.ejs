@@ -1,33 +1,5 @@
-<script crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script>
-<script crossorigin="anonymous" integrity="sha384-dM6zsuDzsXCsxtsqZLjq/OfiLRL2uWTlt6JjsGP/dlEenhTw8xDfE+eo2v8Ol5xf" src="https://lib.baomitu.com/video.js/7.5.0/alt/video.novtt.min.js"></script>
-<script crossorigin="anonymous" integrity="sha384-y2Cf94qqv6xOJBSlndm1+hMGBxKdAc3bzmCbiKuXShAeYI6t8HbZwY/r3M5PM5VC" src="https://lib.baomitu.com/video.js/7.5.0/lang/zh-CN.js"></script>
-<script crossorigin="anonymous" integrity="sha384-96C/68sjuLYhEVnwQNeMDN3nsfp7hJ+ZAkET7ytQ8QVu19JYGbxdsNBa9rSIFwb+" src="https://lib.baomitu.com/responsive-nav.js/1.12/responsive-nav.min.js"></script>
-
-<%- partial('third-party/instagram') %>
-<%- partial('third-party/motto') %>
+<%- js({src:'js/liquid-glass.js', defer:true}) %>
+<%- js({src:'js/gallery-motion.js', defer:true}) %>
+<%- js({src:'js/gallery.js', defer:true}) %>
 <%- partial('third-party/analytics') %>
-
-<%if (is_archive()==true) { %>
-    <script type="text/javascript">
-    $(document).ready(function(e) {
-      var h = $(".main ul li:first-child").height();
-      var h1 = $(".main ul li:last-child").height();
-      $(".line").css("top",h);
-      $(".line").height($(".main").height()-h1-h);
-    });
-    </script>
-<% } %>
-
-<script>
-    var nav = responsiveNav("#nav-collapse",{
-        label: '<i class="fa fa-bars"></i>',
-        transition: 400,
-        open: function(){
-            $('#main').css('margin-top','40px');
-        },
-        close: function(){
-            $('#main').css('margin-top','-70px');
-        },
-    });
-</script>
-
+<script type="module" src="<%= url_for('js/glasswork.js') %>"></script>

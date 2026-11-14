@@ -1,17 +1,11 @@
-<article id="<%= post.layout %>-<%= post.slug %>" class="index article-type-<%= post.layout %>">
-    <%- partial('post/title') %>
-    <% if (post.excerpt && index){ %>
-        <%- strip_html(post.excerpt) %>
-    <% } else if (theme.auto_excerpt.enable){ %>
-      <p><%- truncate(strip_html(post.content), {length: theme.auto_excerpt.length, omission: '... (continued)'}) %></p>
-    <% } else { %>
-      <%- post.content %>
-    <% } %>
-    <%- partial('post/index-photos') %>
-    <div class="inner-wrap">
-        <%- partial('post/date') %>
-        <%- partial('post/category') %>
-        <%- partial('post/tag') %>
-    </div>
-    <div class="post-divide"></div>
+<% const media = gallery_media(post); %>
+<article class="album-card<%= media.cover && media.cover.height > media.cover.width ? ' album-portrait' : '' %>">
+  <a class="album-cover image-surface<%= media.cover ? '' : ' album-text-cover' %>" href="<%= url_for(post.path) %>" aria-label="查看<%= media.video ? '影像' : '相册' %>：<%= post.title || '未命名' %>">
+    <% if (media.cover) { %>
+    <img src="<%= url_for(media.cover.src) %>" alt="<%= media.cover.alt || post.title %>" loading="lazy" decoding="async" style="object-position:<%= media.cover.position %>"<% if (media.cover.width && media.cover.height) { %> width="<%= media.cover.width %>" height="<%= media.cover.height %>"<% } %>>
+    <% } else { %><span><%= post.title || '随笔' %></span><% } %>
+    <% if (media.video) { %><span class="media-badge"><span aria-hidden="true">▷</span> 影像</span><% } else if (media.images.length > 1) { %><span class="media-badge"><%= media.images.length %> 张照片</span><% } %>
+  </a>
+  <div class="album-caption"><h3><a href="<%= url_for(post.path) %>"><%= post.title || '未命名' %></a></h3><time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'YYYY.MM') %></time></div>
+  <% if (post.tags && post.tags.length) { %><p class="album-location"><%= post.tags.toArray().map(tag => tag.name).join('、') %></p><% } %>
 </article>
