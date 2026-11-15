@@ -115,3 +115,7 @@ npm run preview
 ```
 
 打开 `http://127.0.0.1:4000/_glass-test/`。`?renderer=webgl` 强制验证 WebGL 路径，`?no-webgl` 检查 WebGL 不可用回退，`?broken` 检查图片失败。重新构建会清除验收页。浏览器覆盖与本次文件清单分别见 [VALIDATION.md](VALIDATION.md)、[GLASSWORK_CHANGES.md](GLASSWORK_CHANGES.md)。
+
+### 同一作者的其他网站
+
+在站点的 `_config.WhyL.yml` 中配置 `site_links` 列表（`label`、`url`，当前站点设 `current: true`），会在每页页脚显示站点切换。`social` 中的链接出现在首页关于区。可选的 `gallery.explore` 包含 `title`、`description`、`links`（`label`、`url`），显示在相册详情底部，适合引导读者继续阅读或了解作者。主题不预设个人域名。

@@ -318,3 +318,13 @@ html:active-view-transition .site-main { animation: none; }
 .liquid-link.has-refraction { text-shadow: 0 1px 2px #ffffffc0, 0 -1px 2px #ffffffa0, 1px 0 2px #ffffffa0, -1px 0 2px #ffffffa0; }
 .liquid-link.has-refraction::after { background: radial-gradient(ellipse at var(--shine-x,35%) 0%,#ffffff25,transparent 60%); }
 @media (max-width:640px) { .liquid-link { min-height:60px; } }
+
+/* Quiet exits after browsing, without crowding the primary navigation. */
+.author-sites { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.author-sites a, .author-sites span { display: inline-flex; align-items: center; min-height: 44px; }
+.author-sites [aria-current] { color: var(--muted); }
+.site-footer { flex-wrap: wrap; }
+.author-explore { max-width: 760px; margin: 48px auto 0; padding-top: 24px; border-top: 1px solid var(--line); }
+.author-explore h2 { font-size: 20px; font-weight: 500; }
+.author-explore p { color: var(--muted); }
+.author-explore a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; }

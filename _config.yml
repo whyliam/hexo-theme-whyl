@@ -137,3 +137,6 @@ gallery:
   about:
 
 version: 0.1.1
+
+# Other sites by the same author, shown in the footer.
+site_links: []

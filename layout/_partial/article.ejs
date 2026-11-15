@@ -6,5 +6,11 @@
   <%- partial('post/photos', {post:post}) %>
   <div class="post-content"><%- post.content %></div>
   <%- partial('post/nav', {post:post}) %>
+  <% if (is_post() && theme.gallery && theme.gallery.explore) { const explore = theme.gallery.explore; %>
+  <aside class="author-explore" aria-labelledby="explore-title">
+    <h2 id="explore-title"><%= explore.title %></h2><p><%= explore.description %></p>
+    <div class="about-links"><% (explore.links || []).forEach(function(link) { %><a href="<%= link.url %>"><%= link.label %> ↗</a><% }); %></div>
+  </aside>
+  <% } %>
   <%- partial('third-party/comments') %>
 </article>

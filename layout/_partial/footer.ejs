@@ -1,1 +1,6 @@
-<footer class="site-footer wrap"><p>© <%= theme.since || date(Date.now(), 'YYYY') %>–<%= date(Date.now(), 'YYYY') %> <%= config.author || config.title %></p><p>由 <a href="https://hexo.io/" rel="external">Hexo</a> 驱动 · WhyL</p><%- partial('third-party/analytics/busuanzi-counter') %><a href="#top">回到顶部 ↑</a></footer>
+<footer class="site-footer wrap">
+<% if (theme.site_links && theme.site_links.length) { %>
+<nav class="author-sites" aria-label="我的网站"><% theme.site_links.forEach(function(link) { %>
+<% if (link.current) { %><span aria-current="page"><%= link.label %></span><% } else { %><a href="<%= link.url %>"><%= link.label %> ↗</a><% } %>
+<% }); %></nav>
+<% } %><p>© <%= theme.since || date(Date.now(), 'YYYY') %>–<%= date(Date.now(), 'YYYY') %> <%= config.author || config.title %></p><p>由 <a href="https://hexo.io/" rel="external">Hexo</a> 驱动 · WhyL</p><%- partial('third-party/analytics/busuanzi-counter') %><a href="#top">回到顶部 ↑</a></footer>
